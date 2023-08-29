@@ -46,6 +46,34 @@ function VisualHarvesting.isReady(uniqueIndex)
     return data.state
 end
 
+function VisualHarvesting.getDisplayName(ingredient)
+    -- Exception table for special ingredients
+    local exceptions = {
+        ["ingred_russula_01"] = "Luminous Russula",
+        ["ingred_coprinus_01"] = "Violet Coprinus",
+        ["ingred_belladonna_01"] = "Ripened Belladonna Berries",
+        ["ingred_belladonna_02"] = "Unripened Belladonna Berries",
+        ["ingred_holly_01"] = "Holly Berries"
+        -- You can easily extend this table with more exceptions in the future
+    }
+
+    -- Check if the ingredient is an exception
+    if exceptions[ingredient] then
+        return exceptions[ingredient]
+    end
+
+    local displayName = ingredient:match("ingred_(.-)_%d+")  -- Extract main part
+    displayName = displayName:gsub("_", " ")  -- Replace underscores with spaces
+
+    -- Capitalize each word
+    local words = {}
+    for word in displayName:gmatch("[^-]+") do  -- Split by space or hyphen
+        word = word:gsub("^%l", string.upper)  -- Capitalize the first letter
+        table.insert(words, word)
+    end
+    return table.concat(words, " ")  -- Join with space
+end
+
 function VisualHarvesting.addIngredientToPlayer(pid, refId)
     local player = Players[pid]
     local plantConfig = VisualHarvesting.config.plants[refId]
@@ -79,7 +107,8 @@ function VisualHarvesting.addIngredientToPlayer(pid, refId)
         end
 
         inventoryHelper.addItem(player.data.inventory, ingred, ingredient_count, -1, -1, "")
-        local message = string.format(VisualHarvesting.config.success.message, ingredient_count)
+        -- local message = string.format(VisualHarvesting.config.success.message, ingredient_count)
+        local message = string.format("You harvested %d %s.", ingredient_count, VisualHarvesting.getDisplayName(ingred))
         tes3mp.MessageBox(pid, VisualHarvesting.config.menuId, message)
         tes3mp.PlaySpeech(pid, VisualHarvesting.config.success.sound)
         
